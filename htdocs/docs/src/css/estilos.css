@@ -1,0 +1,102 @@
+body {
+	background-color: #282828;
+
+}
+
+.cabecalho {
+	height: 80px;
+	background-color: #0b0b0b;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 0 80px;
+	border-bottom: 1px solid #282828;
+    font-family: 'Times New Roman', Times, serif;
+    color: purple;
+    font-size: 125%;
+}
+.cabecalho .title{
+    color: rebeccapurple;
+    padding-left: 30%; /*Empurra o titulo para o centro (a olho :D)*/
+}
+.cabecalho .menu{
+    margin-left: 100%; /*Empurra o sistema de login para a direita*/
+}
+
+.corpo {
+    color: red;
+	display: flex;
+	position: relative;
+	min-height: calc(100vh - 80px);
+}
+
+.corpo ::after {
+	content: "";
+	position: absolute;
+	height: 100%;
+	width: 100%;
+}
+
+.corpo  .imagem-fundo {
+	width: 100%;
+	object-fit: cover;
+}
+
+.corpo .informacoes {
+	position: absolute;
+	z-index: 1;
+	min-height: calc(100vh - 80px);
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 32px;
+	padding: 80px 80px 80px 170px;
+	max-width: 780px;
+}
+
+form {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    max-width: 400px;
+    margin: auto;
+}
+
+form h2 {
+    margin-top: 0;
+}
+
+form label {
+    display: block;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+form input {
+    display: block;
+    width: calc(100% - 22px); /* Adjust for padding */
+    margin-top: 5px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+form button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+form button:hover {
+    background-color: #555;
+}
+
+form p {
+    color: #f00; /* Color for error messages */
+    font-size: 14px;
+}
