@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projeto WEB 3º Bimestre - Manipulação CRUD</title>
+    <link rel="shortcut icon" href="imagens/icone da pagina.png" type="image/x-icon" />
+
+    <link rel="stylesheet" href="./css/estilos.css" />
+    <link rel="stylesheet" href="./css/reset.css" />
+</head>
+
+<body>
+    <header class="cabecalho">
+        <h1 class="title">Projeto WEB 3º Bimestre - Manipulação CRUD</h1>
+        <nav>
+            <ul class="menu">
+                <li><a href="#" onclick="loadContent('login')">Login</a></li>
+                <li><a href="#" onclick="loadContent('cadastro')">Cadastro</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="content" id="content">
+    </main>
+
+    <script>
+        function loadContent(page) {
+            const contentElement = document.getElementById('content');
+            if (page === 'login') {
+                contentElement.innerHTML = `
+                    <form id="loginForm">
+                        <h2>Login</h2>
+                        <label for="loginEmail">Email:</label>
+                        <input type="email" id="loginEmail" name="email" required>
+                        <br>
+                        <label for="loginPassword">Senha:</label>
+                        <input type="password" id="loginPassword" name="senha" required>
+                        <br>
+                        <button type="submit">Entrar</button>
+                    </form>
+                `;
+                document.getElementById('loginForm').addEventListener('submit', function(event) {
+                    event.preventDefault(); // Impede o envio padrão do formulário
+    
+                    const email = document.getElementById('loginEmail').value;
+                    const senha = document.getElementById('loginPassword').value;
+    
+                    fetch('http://localhost/login', { // URI de login
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, senha })
+        })
+        .then(response => response.json())
+        .then(data => {
+        if (data.success) {
+            alert('Login bem-sucedido!');
+            // Redirecionar ou atualizar a UI conforme necessário
+        } else {
+            alert('Erro no login: ' + data.message);
+        }
+    })
+                    .catch(error => console.error('Erro:', error));
+                });
+            } else if (page === 'cadastro') {
+                contentElement.innerHTML = `
+                    <form id="signupForm">
+                        <h2>Cadastro</h2>
+                        <label for="signupName">Nome:</label>
+                        <input type="text" id="signupName" name="nome" required>
+                        <br>
+                        <label for="signupEmail">Email:</label>
+                        <input type="email" id="signupEmail" name="email" required>
+                        <br>
+                        <label for="signupPassword">Senha:</label>
+                        <input type="password" id="signupPassword" name="senha" required>
+                        <br>
+                        <button type="submit">Cadastrar</button>
+                    </form>
+                `;
+                document.getElementById('signupForm').addEventListener('submit', function(event) {
+                    event.preventDefault(); // Impede o envio padrão do formulário
+    
+                    const nomeUsuario = document.getElementById('nomeUsuario').value;
+                    const emailUsuario = document.getElementById('emailUsuario').value;
+                    const senhaUsuario = document.getElementById('senhaUsuario').value;
+    
+                    fetch('http://localhost:8080/usuario', {//colocar a uri do cadastro insert na table usuarios (put) 
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ nomeUsuario, emailUsuario, senhaUsuario})
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Cadastro bem-sucedido!');
+                            // Redirecionar ou atualizar a UI conforme necessário
+                        } else {
+                            alert('Erro no cadastro: ' + data.message);
+                        }
+                    })
+                    .catch(error => console.error('Erro:', error));
+                });
+            }
+        }
+    </script>
+    
+
+    
+    <main class="corpo">
+        <img class="imagem-fundo" src="./imagens/backgroundLibray.jpg" />
+        <div class="informacoes">
+        <h1>Visualização de Dados</h1>
+    
+        <div>
+            <button onclick="loadData('autores')">Ver Autores</button>
+            <button onclick="loadData('livros')">Ver Livros</button>
+            <button onclick="loadData('generos')">Ver Gêneros</button>
+            <button onclick="loadData('usuarios')">Ver Usuários</button>
+        </div>
+    
+        <div id="content"></div>
+    </div>
+    <script src="script.js">
+        function loadData(tableName) {
+    fetch(`https://sua-api.com/getData?table=${tableName}`) //colocar a uri do select das informações 
+        .then(response => response.json())
+        .then(data => {
+            const contentElement = document.getElementById('content');
+            let html = '<table><tr>';
+
+            // Generate table headers
+            if (data.length > 0) {
+                Object.keys(data[0]).forEach(key => {
+                    html += `<th>${key}</th>`;
+                });
+                html += '</tr>';
+                
+                // Generate table rows
+                data.forEach(row => {
+                    html += '<tr>';
+                    Object.values(row).forEach(value => {
+                        html += `<td>${value}</td>`;
+                    });
+                    html += '</tr>';
+                });
+            } else {
+                html += '<tr><td colspan="5">Nenhum dado encontrado</td></tr>';
+            }
+
+            html += '</table>';
+            contentElement.innerHTML = html;
+        })
+        .catch(error => {
+            console.error('Erro ao carregar dados:', error);
+            document.getElementById('content').innerHTML = `<p>Erro ao carregar dados: ${error.message}</p>`;
+        });
+}
+
+    </script>
+
+
+    </main>
+</body>
+
+</html>

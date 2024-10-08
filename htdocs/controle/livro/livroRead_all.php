@@ -1,15 +1,18 @@
 <?php
+require_once ("modelo/Banco.php");
+require_once ("modelo/Livro.php");
 
-    require_once "modelo/livro.php";
+$objResposta = new stdClass();
+$objLivro = new Livro();
 
-    $livro = new livro();
-    $resultado = $livro->readAll();
+$vetor = $objLivro->readAll();
 
-    if ($resultado) {
-        header('HTTP/1.1 200 OK');
-        echo json_encode($resultado);
-    } else {
-        header('HTTP/1.1 404 Not Found');
-        echo json_encode(["message" => "Nenhum livro encontrado"]);
-    }
+$objResposta->cod = 1;
+$objResposta->status = true;
+$objResposta->msg = "executado com sucesso";
+$objResposta->livros = $vetor;
+
+header("HTTP/1.1 200");
+header("Content-Type: application/json");
+echo json_encode($objResposta);
 ?>

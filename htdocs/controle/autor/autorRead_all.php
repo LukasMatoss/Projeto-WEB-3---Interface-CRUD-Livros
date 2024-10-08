@@ -1,17 +1,18 @@
 <?php
+require_once ("modelo/Banco.php");
+require_once ("modelo/Autor.php");
 
-    echo "Eu sou o read all autor";
+$objResposta = new stdClass();
+$objAutor = new Autor();
 
-    require_once "modelo/autor.php";
+$vetor = $objAutor->readAll();
 
-    $autor = new autor();
-    $resultado = $autor->readAll();
+$objResposta->cod = 1;
+$objResposta->status = true;
+$objResposta->msg = "executado com sucesso";
+$objResposta->Autor = $vetor;
 
-    if ($resultado) {
-        header('HTTP/1.1 200 OK');
-        echo json_encode($resultado);
-    } else {
-        header('HTTP/1.1 404 Not Found');
-        echo json_encode(["message" => "Nenhum autor encontrado"]);
-    }
+header("HTTP/1.1 200");
+header("Content-Type: application/json");
+echo json_encode($objResposta);
 ?>

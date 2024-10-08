@@ -11,95 +11,136 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,N
 -- -----------------------------------------------------
 -- Schema projeto_web
 -- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `projeto_web` DEFAULT CHARACTER SET utf8mb4 ;
+CREATE SCHEMA IF NOT EXISTS `projeto_web` DEFAULT CHARACTER SET utf8 ;
 USE `projeto_web` ;
 
 -- -----------------------------------------------------
 -- Table `projeto_web`.`autores`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `projeto_web`.`autores` (
-  `id_autor` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `nome_autor` VARCHAR(120) NOT NULL,
-  `nacionalidade` VARCHAR(64) NOT NULL,
-  `data_nascimento` DATE NULL DEFAULT NULL,
-  PRIMARY KEY (`id_autor`))
+CREATE TABLE IF NOT EXISTS projeto_web.autores (
+  idautores INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  nomeAutor VARCHAR(128) NOT NULL,
+  nacionalidade VARCHAR(60) NOT NULL,
+  idade INT(11) NOT NULL,
+  PRIMARY KEY (idautores),
+  UNIQUE INDEX idautores_UNIQUE (idautores ASC),
+  UNIQUE INDEX nomeAutor_UNIQUE (nomeAutor ASC))
 ENGINE = InnoDB
-AUTO_INCREMENT = 15
-DEFAULT CHARACTER SET = utf8mb4;
-
+AUTO_INCREMENT = 6
+DEFAULT CHARACTER SET = utf8;
 
 -- -----------------------------------------------------
--- Table `projeto_web`.`generos`
+-- Table projeto_web.livros
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `projeto_web`.`generos` (
-  `id_genero` INT(11) NOT NULL AUTO_INCREMENT,
-  `tipo` VARCHAR(100) NOT NULL,
-  PRIMARY KEY (`id_genero`))
+CREATE TABLE IF NOT EXISTS projeto_web.livros (
+  idlivros INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  nomeLivro VARCHAR(100) NOT NULL,
+  autores_idautores INT(10) UNSIGNED NOT NULL,
+  editoraLivro VARCHAR(100) NOT NULL,
+  usuario_idUsuario INT(10) UNSIGNED DEFAULT NULL, -- Adicionando a coluna usuario_idUsuario
+  PRIMARY KEY (idlivros),
+  UNIQUE INDEX idlivros_UNIQUE (idlivros ASC),
+  UNIQUE INDEX nomeLivro_UNIQUE (nomeLivro ASC),
+  INDEX fk_livros_autores_idx (autores_idautores ASC),
+  INDEX fk_livros_usuario_idx (usuario_idUsuario ASC), -- Índice para a chave estrangeira usuario_idUsuario
+  CONSTRAINT fk_livros_autores
+    FOREIGN KEY (autores_idautores)
+    REFERENCES projeto_web.autores (idautores)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT fk_livros_usuario
+    FOREIGN KEY (usuario_idUsuario)
+    REFERENCES projeto_web.usuario (idUsuario)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB
-AUTO_INCREMENT = 15
-DEFAULT CHARACTER SET = utf8mb4;
-
+AUTO_INCREMENT = 2
+DEFAULT CHARACTER SET = utf8;
+-- -----------------------------------------------------
+-- Table `projeto_web`.`Genero`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `projeto_web`.`Genero` (
+  `idGenero` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nomeGenero` VARCHAR(60) NOT NULL,
+  PRIMARY KEY (`idGenero`),
+  UNIQUE INDEX `idGenero_UNIQUE` (`idGenero` ASC))
+ENGINE = InnoDB;
 
 -- -----------------------------------------------------
--- Table `projeto_web`.`livros`
+-- Table `projeto_web`.`usuario`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `projeto_web`.`livros` (
-  `id_livro` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `nome_livro` VARCHAR(120) NOT NULL,
-  `editora_livro` VARCHAR(64) NOT NULL,
-  `id_autor` INT(11) NOT NULL,
-  `id_genero` INT(11) NOT NULL,
-  PRIMARY KEY (`id_livro`))
-ENGINE = InnoDB
-AUTO_INCREMENT = 8
-DEFAULT CHARACTER SET = utf8mb4;
-
+CREATE TABLE IF NOT EXISTS `projeto_web`.`usuario` (
+  `idUsuario` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nomeUsuario` VARCHAR(60) NOT NULL,
+  `emailUsuario` VARCHAR(45) NOT NULL,
+  `senhaUsuario` VARCHAR(60) NOT NULL,
+  PRIMARY KEY (`idUsuario`),
+  UNIQUE INDEX `senhaUsuario_UNIQUE` (`senhaUsuario` ASC))
+ENGINE = InnoDB;
 
 -- -----------------------------------------------------
--- Table `projeto_web`.`usuarios`
+-- Table `projeto_web`.`Genero_has_Livro`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `projeto_web`.`usuarios` (
-  `id` INT(11) NOT NULL AUTO_INCREMENT,
-  `nome` VARCHAR(100) NOT NULL,
-  `email` VARCHAR(100) NOT NULL,
-  `senha` VARCHAR(255) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE INDEX `email` (`email` ASC))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4;
-
+CREATE TABLE IF NOT EXISTS `projeto_web`.`Genero_has_Livro` (
+  `Genero_idGenero` INT UNSIGNED NOT NULL,
+  `Livro_idlivros` INT UNSIGNED NOT NULL,
+  PRIMARY KEY (`Genero_idGenero`, `Livro_idlivros`),
+  INDEX `fk_Genero_has_Livro_Livro1_idx` (`Livro_idlivros` ASC),
+  INDEX `fk_Genero_has_Livro_Genero1_idx` (`Genero_idGenero` ASC),
+  CONSTRAINT `fk_Genero_has_Livro_Genero1`
+    FOREIGN KEY (`Genero_idGenero`)
+    REFERENCES `projeto_web`.`Genero` (`idGenero`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Genero_has_Livro_Livro1`
+    FOREIGN KEY (`Livro_idlivros`)
+    REFERENCES `projeto_web`.`livros` (`idlivros`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 
-INSERT INTO usuarios (nome_usuario, email_usuario, senha_usuario) VALUES
-    ('Lukas Macacari de Matos', 'lukasrocket08@gmail.com', '451712'),
-    ('Junior', 'junior04@gmail.com', 'batatafrita' );
+-- -----------------------------------------------------
+-- Data for table `projeto_web`.`Genero`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `projeto_web`;
+INSERT INTO `projeto_web`.`Genero` (`idGenero`, `nomeGenero`) VALUES (DEFAULT, 'Ficção Científica');
+INSERT INTO `projeto_web`.`Genero` (`idGenero`, `nomeGenero`) VALUES (DEFAULT, 'Fantasia');
+INSERT INTO `projeto_web`.`Genero` (`idGenero`, `nomeGenero`) VALUES (DEFAULT, 'Romance');
+INSERT INTO `projeto_web`.`Genero` (`idGenero`, `nomeGenero`) VALUES (DEFAULT, 'Mistério');
+INSERT INTO `projeto_web`.`Genero` (`idGenero`, `nomeGenero`) VALUES (DEFAULT, 'Autoajuda');
+INSERT INTO `projeto_web`.`Genero` (`idGenero`, `nomeGenero`) VALUES (DEFAULT, 'Histórico');
+INSERT INTO `projeto_web`.`Genero` (`idGenero`, `nomeGenero`) VALUES (DEFAULT, 'Distopia');
+INSERT INTO `projeto_web`.`Genero` (`idGenero`, `nomeGenero`) VALUES (DEFAULT, 'Aventura');
+INSERT INTO `projeto_web`.`Genero` (`idGenero`, `nomeGenero`) VALUES (DEFAULT, 'Autobiografia');
+INSERT INTO `projeto_web`.`Genero` (`idGenero`, `nomeGenero`) VALUES (DEFAULT, 'Drama');
 
-INSERT INTO livros (nome_livro, editora_livro) VALUES
-    ('Romeu e Julieta', 'Paulus Editora' ),
-    ('O Senhor dos Anéis: A Sociedade do Anel', 'HarperCollins Brasil' ),
-    ('Harry Potter e a Criança Amaldiçoada', 'J.K. Rowling' ),
-    ('A Fúria dos Reis - As Crônicas de Gelo e Fogo', 'LEYA BRASIL' ),
-    ('Pai rico, pai pobre para jovens', 'Elsevier' ),
-    ('Recordando Anne Frank', 'Gutenberg Editora' ),
-    ('O Príncipe', 'Bibliomundi' );
+COMMIT;
 
-INSERT INTO autores(nome_autor, nacionalidade, data_nascimento) VALUES
-    ('William Shakespeare', 'Inglês', 1564-04-23),
-    ('J.R.R. Tolkien', 'Sul Africano', 1882-01-03),
-    ('J.K. Rowling', 'britânica', 1965-07-31),
-    ('George R. R. Martin', 'Estadunidense', 1948-09-20),
-    ('Robert T. Kiyosaki, LECHTER SHARON', 'Estadunidense', 1947-04-08),
-    ('Miep Gies, Alison Leslie Gold', 'Austríaca', 1909-02-15),
-    ('Nicolau Maquiavel', 'Italiano', 1469-05-03);
+-- Inserts para a tabela autores
+INSERT INTO projeto_web.autores (idautores, nomeAutor, nacionalidade, idade) VALUES (DEFAULT, 'J.R.R. Tolkien', 'Sul Africano', 81);
+INSERT INTO projeto_web.autores (idautores, nomeAutor, nacionalidade, idade) VALUES (DEFAULT, 'J.K. Rowling', 'Britânica', 59);
+INSERT INTO projeto_web.autores (idautores, nomeAutor, nacionalidade, idade) VALUES (DEFAULT, 'William Shakespeare', 'Inglês', 52);
+INSERT INTO projeto_web.autores (idautores, nomeAutor, nacionalidade, idade) VALUES (DEFAULT, 'Miep Gies, Alison Leslie Gold', 'Austríaca', 100);
+INSERT INTO projeto_web.autores (idautores, nomeAutor, nacionalidade, idade) VALUES (DEFAULT, 'George R. R. Martin', 'Estadunidense', 75);
 
-INSERT INTO generos(tipo) VALUES
-    ('Tragédia'),
-    ('Ficção de aventura'),
-    ('Fantasia'),
-    ('Romance'),
-    ('Finanças pessoais'),
-    ('Autobiografia'),
-    ('Não ficção');
+-- Inserts para a tabela livros
+INSERT INTO projeto_web.livros (idlivros, nomeLivro, autores_idautores, editoraLivro, usuario_idUsuario) VALUES (DEFAULT, 'Harry Potter e a Pedra Filosofal', 2, 'HarperCollins Brasil', NULL);
+INSERT INTO projeto_web.livros (idlivros, nomeLivro, autores_idautores, editoraLivro, usuario_idUsuario) VALUES (DEFAULT, 'Romeu e Julieta', 3, 'Paulus Editora', NULL);
+INSERT INTO projeto_web.livros (idlivros, nomeLivro, autores_idautores, editoraLivro, usuario_idUsuario) VALUES (DEFAULT, 'O Diário de Anne Frank', 4, 'Gutenberg Editora', NULL);
+INSERT INTO projeto_web.livros (idlivros, nomeLivro, autores_idautores, editoraLivro, usuario_idUsuario) VALUES (DEFAULT, 'As Crônicas de Nárnia', 1, 'LEYA BRASIL', NULL);
+
+COMMIT;
+
+-- -----------------------------------------------------
+-- Data for table `projeto_web`.`usuario`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `projeto_web`;
+INSERT INTO `projeto_web`.`usuario` (`idUsuario`, `nomeUsuario`, `emailUsuario`, `senhaUsuario`) VALUES (1, 'Lukas', 'lukasrocket08@gmail.com', 'batata');
+
+COMMIT;

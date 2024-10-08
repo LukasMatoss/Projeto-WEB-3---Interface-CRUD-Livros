@@ -1,146 +1,151 @@
 <?php
-require_once "modelo/banco.php";
+require_once ("modelo/Banco.php");
 
-class livro implements JsonSerializable
+class Livro implements JsonSerializable
 {
-    private $id_livro;
-    private $nome_livro;
-    private $editora_livro;
-    private $id_autor;
-    private $id_genero;
+    private $idlivros;
+    private $nomeLivro;
+    private $autores_idautores;
+    private $editoraLivro; // Novo campo
 
-public function jsonSerialize()
-{
-    $array = array();
-    if (isset($this->id_livro)) $array['id_livro'] = $this->id_livro;
-    if (isset($this->nome_livro)) $array['nome_livro'] = $this->nome_livro;
-    if (isset($this->editora_livro)) $array['editora_livro'] = $this->editora_livro;
-    if (isset($this->id_autor)) $array['id_autor'] = $this->id_autor;
-    if (isset($this->id_genero)) $array['id_genero'] = $this->id_genero;
-    return $array;
-}
+    public function jsonSerialize()
+    {
+        $objetoResposta = new stdClass();
+        $objetoResposta->idlivros = $this->idlivros;
+        $objetoResposta->nomeLivro = $this->nomeLivro;
+        $objetoResposta->autores_idautores = $this->autores_idautores;
+        $objetoResposta->editoraLivro = $this->editoraLivro; // Adicionado
 
-public function readAll()
+        return $objetoResposta;
+    }
+
+    public function create()
     {
         $conexao = Banco::getConexao();
-        $prepararSql = $conexao->prepare("SELECT * FROM livros");
-        $prepararSql->execute();
-        $matrizResultados = $prepararSql->get_result();
-        $livros = array();
-        while ($tuplaBanco = $matrizResultados->fetch_object()) {
-            $livro = new livro();
-            $livro->setIdLivro($tuplaBanco->id_livro);
-            $livro->setNomeLivro($tuplaBanco->nome_livro);
-            $livro->setEditoraLivro($tuplaBanco->editora_livro);
-            $livro->setIdAutor($tuplaBanco->id_autor);
-            $livro->setIdGenero($tuplaBanco->id_genero);
-            $livros[] = $livro;
+        $SQL = "INSERT INTO livros (nomeLivro, autores_idautores, editoraLivro) VALUES (?, ?, ?);"; // Atualizado
+        $prepareSQL = $conexao->prepare($SQL);
+        $prepareSQL->bind_param("sis", $this->nomeLivro, $this->autores_idautores, $this->editoraLivro); // Atualizado
+        $executou = $prepareSQL->execute();
+        $idCadastrado = $conexao->insert_id;
+        $this->setidlivros($idCadastrado);
+        return $executou;
+    }
+
+    public function delete()
+    {
+        $conexao = Banco::getConexao();
+        $SQL = "DELETE FROM livros WHERE idlivros=?;";
+        $prepareSQL = $conexao->prepare($SQL);
+        $prepareSQL->bind_param("i", $this->idlivros);
+        return $prepareSQL->execute();
+    }
+
+    public function update()
+    {
+        $conexao = Banco::getConexao();
+        $SQL = "UPDATE livros SET nomeLivro=?, autores_idautores=?, editoraLivro=? WHERE idlivros=?"; // Atualizado
+        $prepareSQL = $conexao->prepare($SQL);
+        $prepareSQL->bind_param("sisi", $this->nomeLivro, $this->autores_idautores, $this->editoraLivro, $this->idlivros); // Atualizado
+        $executou = $prepareSQL->execute();
+        return $executou;
+    }
+
+    public function isLivro()
+    {
+        $conexao = Banco::getConexao();
+        $SQL = "SELECT COUNT(*) AS qtd FROM livros WHERE nomeLivro = ?;";
+        $prepareSQL = $conexao->prepare($SQL);
+        $prepareSQL->bind_param("s", $this->nomeLivro);
+        $executou = $prepareSQL->execute();
+        $matrizTuplas = $prepareSQL->get_result();
+        $objTupla = $matrizTuplas->fetch_object();
+        return $objTupla->qtd > 0;
+    }
+
+    public function readAll()
+    {
+        $conexao = Banco::getConexao();
+        $SQL = "SELECT * FROM livros ORDER BY nomeLivro";
+        $prepareSQL = $conexao->prepare($SQL);
+        $executou = $prepareSQL->execute();
+        $matrizTuplas = $prepareSQL->get_result();
+        $vetorLivro = array();
+        $i = 0;
+        while ($tupla = $matrizTuplas->fetch_object()) {
+            $vetorLivro[$i] = new Livro();
+            $vetorLivro[$i]->setidlivros($tupla->idlivros);
+            $vetorLivro[$i]->setnomeLivro($tupla->nomeLivro);
+            $vetorLivro[$i]->setautores_idautores($tupla->autores_idautores);
+            $vetorLivro[$i]->seteditoraLivro($tupla->editoraLivro); // Adicionado
+
+            $i++;
         }
-        $prepararSql->close();
-        return $livros;
+        return $vetorLivro;
     }
 
-    public function create() {
+    public function readByID()
+    {
         $conexao = Banco::getConexao();
-        $query = "INSERT INTO livros (nome_livro, editora_livro, id_autor, id_genero) VALUES (?, ?, ?, ?)";
-        $stmt = $conexao->prepare($query);
-        $stmt->bind_param("ssii", $this->nome_livro, $this->editora_livro, $this->id_autor, $this->id_genero);
-        $executou = $stmt->execute();
-        $this->setIdLivro($conexao->insert_id);
-        $stmt->close();
-        return $executou;
-    }
-
-    public function delete() {
-        $conexao = Banco::getConexao();
-        $query = "DELETE FROM livros WHERE id_livro = ?";
-        $stmt = $conexao->prepare($query);
-        $stmt->bind_param("i", $this->id_livro);
-        $executou = $stmt->execute();
-        $stmt->close();
-        return $executou;
-    }
-
-    public function update() {
-        $conexao = Banco::getConexao();
-        $query = "UPDATE livros SET nome_livro = ?, editora_livro = ?, id_autor = ?, id_genero = ? WHERE id_livro = ?";
-        $stmt = $conexao->prepare($query);
-        $stmt->bind_param("ssiii", $this->nome_livro, $this->editora_livro, $this->id_autor, $this->id_genero, $this->id_livro);
-        $executou = $stmt->execute();
-        $stmt->close();
-        return $executou;
-    }
-
-    public function readById() {
-        $conexao = Banco::getConexao();
-        $query = "SELECT * FROM livros WHERE id_livro = ?";
-        $stmt = $conexao->prepare($query);
-        $stmt->bind_param("i", $this->id_livro);
-        $stmt->execute();
-        $resultado = $stmt->get_result();
-        $livro = null;
+        $SQL = "SELECT * FROM livros WHERE idlivros=?;";
+        $prepareSQL = $conexao->prepare($SQL);
+        $prepareSQL->bind_param("i", $this->idlivros);
+        $prepareSQL->execute();
+        $matrizTuplas = $prepareSQL->get_result();
         
-        if ($row = $resultado->fetch_object()) {
-            $livro = new Livro();
-            $livro->setIdLivro($row->id_livro);
-            $livro->setNomeLivro($row->nome_livro);
-            $livro->setEditoraLivro($row->editora_livro);
-            $livro->setIdAutor($row->id_autor);
-            $livro->setIdGenero($row->id_genero);
+        if ($tupla = $matrizTuplas->fetch_object()) {
+            $this->setidlivros($tupla->idlivros);
+            $this->setnomeLivro($tupla->nomeLivro);
+            $this->setautores_idautores($tupla->autores_idautores);
+            $this->seteditoraLivro($tupla->editoraLivro); // Adicionado
+
+            return array($this); // Retorna um vetor com um único livro
         }
-        
-        $stmt->close();
-        return $livro;
+
+        return array(); // Retorna um vetor vazio se o livro não for encontrado
     }
 
+    public function getidlivros()
+    {
+        return $this->idlivros;
+    }
 
+    public function setidlivros($idlivros)
+    {
+        $this->idlivros = $idlivros;
+        return $this;
+    }
 
+    public function getnomeLivro()
+    {
+        return $this->nomeLivro;
+    }
 
-// Get and Set for id_livro
-public function getIdLivro() {
-    return $this->id_livro;
+    public function setnomeLivro($nomeLivro)
+    {
+        $this->nomeLivro = $nomeLivro;
+        return $this;
+    }
+
+    public function getautores_idautores()
+    {
+        return $this->autores_idautores;
+    }
+
+    public function setautores_idautores($autores_idautores)
+    {
+        $this->autores_idautores = $autores_idautores;
+        return $this;
+    }
+
+    public function geteditoraLivro()
+    {
+        return $this->editoraLivro;
+    }
+
+    public function seteditoraLivro($editoraLivro) // Novo método
+    {
+        $this->editoraLivro = $editoraLivro;
+        return $this;
+    }
 }
-
-public function setIdLivro($id_livro) {
-    $this->id_livro = $id_livro;
-}
-
-// Get and Set for nome_livro
-public function getNomeLivro() {
-    return $this->nome_livro;
-}
-
-public function setNomeLivro($nome_livro) {
-    $this->nome_livro = $nome_livro;
-}
-
-// Get and Set for editora_livro
-public function getEditoraLivro() {
-    return $this->editora_livro;
-}
-
-public function setEditoraLivro($editora_livro) {
-    $this->editora_livro = $editora_livro;
-}
-
-// Get and Set for id_autor
-public function getIdAutor() {
-    return $this->id_autor;
-}
-
-public function setIdAutor($id_autor) {
-    $this->id_autor = $id_autor;
-}
-
-// Get and Set for id_genero
-public function getIdGenero() {
-    return $this->id_genero;
-}
-
-public function setIdGenero($id_genero) {
-    $this->id_genero = $id_genero;
-}
-}
-
-
 ?>

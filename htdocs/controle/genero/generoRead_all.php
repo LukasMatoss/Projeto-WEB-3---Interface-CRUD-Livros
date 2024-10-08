@@ -1,17 +1,20 @@
 <?php
 
-    echo "Eu sou o genero read all";
+require_once ("modelo/Banco.php");
+require_once ("modelo/Genero.php");
 
-    require_once "modelo/genero.php";
+$objResposta = new stdClass();
+$objGenero = new Genero();
 
-    $genero = new genero();
-    $resultado = $genero->readAll();
+$vetor = $objGenero->readAll();
 
-    if ($resultado) {
-        header('HTTP/1.1 200 OK');
-        echo json_encode($resultado);
-    } else {
-        header('HTTP/1.1 404 Not Found');
-        echo json_encode(["message" => "Nenhum gênero encontrado"]);
-    }
+$objResposta->cod = 1;
+$objResposta->status = true;
+$objResposta->msg = "executado com sucesso";
+$objResposta->Genero = $vetor;
+
+header("HTTP/1.1 200");
+header("Content-Type: application/json");
+echo json_encode($objResposta);
+
 ?>
